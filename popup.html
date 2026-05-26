@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{width:300px;background:#080b10;color:#e2e8f0;font-family:monospace;}
+.header{background:#0d1117;border-bottom:1px solid #1e2a38;padding:1rem;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-size:1rem;font-weight:700;letter-spacing:0.1em;color:#fff;}
+.logo span{color:#00e5ff;}
+.dot{width:7px;height:7px;border-radius:50%;background:#00ff88;box-shadow:0 0 6px #00ff88;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.body{padding:1rem;}
+.label{font-size:0.62rem;letter-spacing:0.12em;color:#4a6080;margin-bottom:0.3rem;}
+input{width:100%;background:#131920;border:1px solid #1e2a38;color:#e2e8f0;padding:0.6rem;font-family:monospace;font-size:0.75rem;outline:none;margin-bottom:0.6rem;}
+input:focus{border-color:#00e5ff;}
+button{width:100%;background:#00e5ff;color:#000;border:none;padding:0.65rem;font-family:monospace;font-size:0.75rem;font-weight:700;cursor:pointer;margin-bottom:0.5rem;}
+button:hover{background:#33ecff;}
+.btn-ghost{background:transparent;border:1px solid #1e2a38;color:#4a6080;}
+.btn-ghost:hover{border-color:#00e5ff;color:#00e5ff;background:transparent;}
+.result{background:#0d1117;border:1px solid #1e2a38;padding:0.8rem;margin-top:0.6rem;display:none;}
+.result.show{display:block;}
+.score{font-size:1.8rem;font-weight:700;text-align:center;}
+.verdict{text-align:center;font-size:0.65rem;letter-spacing:0.12em;color:#4a6080;margin-top:0.2rem;}
+.bar-bg{height:6px;background:#131920;border:1px solid #1e2a38;margin-top:0.6rem;}
+.bar-fill{height:100%;transition:width 0.8s;}
+.stats{display:flex;justify-content:space-between;margin-top:0.8rem;font-size:0.65rem;color:#4a6080;}
+.stats strong{color:#e2e8f0;}
+.link{display:block;text-align:center;font-size:0.65rem;color:#00e5ff;text-decoration:none;margin-top:0.8rem;cursor:pointer;}
+.footer{border-top:1px solid #1e2a38;padding:0.6rem;font-size:0.6rem;color:#1e2a38;letter-spacing:0.1em;text-align:center;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="logo">FRAUD<span>WATCH</span></div>
+    <div style="font-size:0.55rem;color:#4a6080;letter-spacing:0.15em;">ARC TESTNET GUARD</div>
+  </div>
+  <div class="dot"></div>
+</div>
+<div class="body">
+  <div class="label">CHECK WALLET ADDRESS</div>
+  <input type="text" id="addrInput" placeholder="0x..."/>
+  <button onclick="checkAddr()">🔍 Check Address</button>
+  <button class="btn-ghost" onclick="openApp()">Open FraudWatch ↗</button>
+  <div class="result" id="result">
+    <div class="score" id="scoreNum">—</div>
+    <div class="verdict" id="verdict">—</div>
+    <div class="bar-bg"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+    <div class="stats">
+      <span>Reports: <strong id="repCount">0</strong></span>
+      <span>Upvotes: <strong id="voteCount">0</strong></span>
+    </div>
+  </div>
+  <div class="link" onclick="openApp()">View full report + export PDF ↗</div>
+</div>
+<div class="footer">⬡ KEBS PROTOCOL · ARC TESTNET</div>
+<script>
+async function checkAddr(){
+  const addr=document.getElementById('addrInput').value.trim();
+  if(!addr)return;
+  const result=await chrome.runtime.sendMessage({type:'CHECK_ADDRESS',address:addr});
+  const score=result.score||0;
+  const color=score>=70?'#ff3c5f':score>=40?'#ff8c00':'#00ff88';
+  document.getElementById('scoreNum').textContent=score;
+  document.getElementById('scoreNum').style.color=color;
+  document.getElementById('verdict').textContent=score>=70?'HIGH RISK':score>=40?'MODERATE RISK':'LOW RISK';
+  document.getElementById('barFill').style.cssText='width:'+score+'%;background:'+color;
+  document.getElementById('repCount').textContent=result.reports?.length||0;
+  document.getElementById('voteCount').textContent=result.reports?.reduce((s,r)=>s+(r.votes||0),0)||0;
+  document.getElementById('result').classList.add('show');
+}
+function openApp(){chrome.tabs.create({url:'https://mohammedkibrahim3419-hub.github.io/Fraud-watch-/'});}
+document.getElementById('addrInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkAddr();});
+</script>
+</body>
+</html>
