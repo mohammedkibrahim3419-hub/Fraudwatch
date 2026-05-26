@@ -27,6 +27,7 @@ button:hover{background:#33ecff;}
 .stats{display:flex;justify-content:space-between;margin-top:0.8rem;font-size:0.65rem;color:#4a6080;}
 .stats strong{color:#e2e8f0;}
 .link{display:block;text-align:center;font-size:0.65rem;color:#00e5ff;text-decoration:none;margin-top:0.8rem;cursor:pointer;}
+.report-box{background:#0d1117;border:1px solid #1e2a38;padding:0.8rem;margin-top:0.6rem;display:none;}.report-box.show{display:block;}.report-box textarea{width:100%;background:#131920;border:1px solid #1e2a38;color:#e2e8f0;padding:0.6rem;font-family:monospace;font-size:0.75rem;outline:none;resize:none;height:60px;margin-bottom:0.6rem;}.btn-danger{background:#ff3c5f;color:#fff;border:none;}.btn-danger:hover{background:#ff6080;}
 .footer{border-top:1px solid #1e2a38;padding:0.6rem;font-size:0.6rem;color:#1e2a38;letter-spacing:0.1em;text-align:center;}
 </style>
 </head>
@@ -53,6 +54,12 @@ button:hover{background:#33ecff;}
     </div>
   </div>
   <div class="link" onclick="openApp()">View full report + export PDF ↗</div>
+  <div class="report-box" id="reportBox">
+    <div class="label">REASON FOR FLAGGING</div>
+    <textarea id="reasonInput" placeholder="Describe the scam..."></textarea>
+    <button class="btn-danger" onclick="submitReport()">🚨 Submit Report</button>
+  </div>
+  <div class="link" onclick="toggleReport()">⚑ Flag this address</div>
 </div>
 <div class="footer">⬡ KEBS PROTOCOL · ARC TESTNET</div>
 <script>
@@ -72,6 +79,24 @@ async function checkAddr(){
 }
 function openApp(){chrome.tabs.create({url:'https://mohammedkibrahim3419-hub.github.io/Fraud-watch-/'});}
 document.getElementById('addrInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkAddr();});
+function toggleReport(){
+  const b=document.getElementById('reportBox');
+  b.classList.toggle('show');
+}
+async function submitReport(){
+  const addr=document.getElementById('addrInput').value.trim();
+  const reason=document.getElementById('reasonInput').value.trim();
+  if(!addr||!reason)return;
+  const res=await chrome.runtime.sendMessage({type:'SUBMIT_REPORT',address:addr,reason});
+  if(res.ok){
+    document.getElementById('reasonInput').value='';
+    document.getElementById('reportBox').classList.remove('show');
+    alert('Report submitted onchain!');
+    checkAddr();
+  }else{
+    alert('Failed: '+res.error);
+  }
+}
 </script>
 </body>
 </html>
